@@ -1,0 +1,21 @@
+.chatAIInput {
+  > textarea,
+  > input {
+    border: 0px;
+    padding: 0px;
+    border-radius: 0;
+    &:focus {
+      outline: green solid 1px;
+      box-shadow: none;
+    }
+  }
+
+  > button {
+    border-radius: 0;
+    &:focus {
+      outline: green solid 1px;
+      box-shadow: none;
+    }
+  }
+  
+}

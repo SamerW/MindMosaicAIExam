@@ -1,0 +1,84 @@
+version: '3.8'
+
+name: 'isourceit'
+
+services:
+  mongo:
+    image: mongo:6.0
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: gptexamusr
+      MONGO_INITDB_ROOT_PASSWORD: TG72UdNkbTKQgLRd
+      MONGO_INITDB_DATABASE: gtp-exam-db
+    volumes:
+      - isourceit-data:/data/db
+    restart: always
+    #ports:
+    #  - 127.0.0.1:27017:27017
+    networks:
+      isourceit-net:
+        aliases:
+          - mongo
+
+  redis:
+    image: redis:7
+    #ports:
+    #  - 127.0.0.1:6379:6379
+    networks:
+      isourceit-net:
+          aliases:
+            - redis
+
+  server:
+    profiles:
+      - server
+    build:
+      context: ./isourceit-server
+    depends_on:
+      - mongo
+      - redis
+    volumes:
+      # - ./isourceit-server:/usr/src/app:ro # Uncomment if you want to modify the server source-code online (and comment the next line)
+      - ./isourceit-server/config.py:/usr/src/app/config.py:ro # allow to change configuration without rebuilding the image
+      - ./isourceit-app/build:/usr/src/front:ro
+    #ports:
+    #  - 127.0.0.1:5000:5000
+    networks:
+      isourceit-net:
+          aliases:
+            - isourceit-server
+      #dalai-net:
+    command: [ "-c", "/usr/src/app/config.py", "-s", "/usr/src/front", "-l", "INFO" ] # Modify to your wills
+
+  proxy:
+    profiles: 
+      - proxy
+    image: httpd:2.4
+    volumes:
+      - ./examples/reverseProxy/proxy-httpd.conf:/usr/local/apache2/conf/httpd.conf:ro
+    ports:
+      - 8888:80
+    networks:
+      - isourceit-net
+
+  npm:
+    profiles: 
+      - front-builder
+    image: node:19
+    volumes:
+      - ./isourceit-app:/usr/src/app
+    working_dir: /usr/src/app
+    command: bash -c "npm ci && npm run build"
+
+
+  
+
+volumes:
+  isourceit-data:
+
+
+networks:
+  isourceit-net:
+    external: true
+
+  #dalai-net:
+    #external: true

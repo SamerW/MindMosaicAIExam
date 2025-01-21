@@ -1,0 +1,18 @@
+.AnalyticsAction {
+  width: 50%;
+
+  &:not(:first-child) {
+    margin-top: -3em;
+  }
+
+  &>.panel {
+    width: 98%;
+  }
+
+  &>.pointer {
+    width: 2%;
+    &>svg {
+      width: 100%;
+    }
+  }
+}

@@ -1,0 +1,42 @@
+@mixin transition($propname, $property) {
+  -webkit-transition-#{$propname}: $property;
+  transition-#{$propname}: $property;
+}
+
+.errorList {
+  position: fixed;
+  top: 50px;
+  right: 0.5em;
+  z-index: 10;
+
+  div {
+    margin-top: 0;
+    margin-bottom: 0.5em;
+  }
+}
+
+.enter {
+  opacity: 0;
+  left: 500px;
+}
+
+.enterActive {
+  @include transition("property", opacity left);
+  @include transition("duration", 1500ms);
+  @include transition("function", ease-in-out);
+  opacity: 1;
+  left: 0;
+}
+
+.exit {
+  opacity: 1;
+  left: 0;
+}
+
+.exitActive {
+  @include transition("property", opacity left);
+  @include transition("duration", 500ms);
+  @include transition("function", ease-in-out);
+  opacity: 0;
+  left: 500px;
+}

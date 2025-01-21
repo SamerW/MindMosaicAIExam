@@ -1,0 +1,14 @@
+@use "sass:map";
+@import "~bootstrap/scss/functions";
+@import "~bootstrap/scss/variables";
+@import "~bootstrap/scss/mixins";
+
+body{
+  padding-top: 40px + 4*2 + 12;
+}
+
+@media (min-width: map.get($grid-breakpoints, "md")) and (max-width: map.get($grid-breakpoints, "xl")) {
+  body{
+    padding-top: 64px + 4*2 + 12;
+  }
+}
