@@ -1,6 +1,5 @@
-# Transparency Exam System
-
-Transparency Exam System is a plateform to take advantage of LLM Chat bot (such as Chat GPT) within an exam process. It allows students to use different chat bots for the exam, integrated or not to the plateform, beside the redaction of their answer to a given question, then provides detailled analytics to the teachers regarding actions students achivied.
+# MindMosaicAIExam
+MindMosaic AI Exam System allows to extract thinking artefacts from students as they are using AI tools such as LLMs to answer their exam questions
 
 The plateform is built over 4 components:
 - A Mongo database for exam information, analytics and HTTP sessions.
