@@ -1,6 +1,6 @@
 
 <p align="center">
-  <img src="mindmosaic_logo" alt="Project Logo" width="150">
+  <img src="mindmosaic_logo.png" alt="Project Logo" width="150">
 </p>
 
 <h1 align="center">MindMosaicAIExam</h1>
