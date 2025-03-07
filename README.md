@@ -1,4 +1,17 @@
-# MindMosaicAIExam
+
+<p align="center">
+  <img src="mindmosaic_logo" alt="Project Logo" width="150">
+</p>
+
+<h1 align="center">MindMosaicAIExam</h1>
+
+<p align="center">
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT">
+  </a>
+</p>
+
+
 MindMosaic AI Exam System allows to extract thinking artefacts from students as they are using AI tools such as LLMs to answer their exam questions
 
 The plateform is built over 4 components:
