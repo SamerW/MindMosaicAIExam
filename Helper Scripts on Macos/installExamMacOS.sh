@@ -91,7 +91,7 @@ else
 fi
 
 # Clone the GitHub repository
-REPO_URL="https://github.com/SamerW/MindMosaicAIExam/MindMosaicAIExam.git"
+REPO_URL="https://github.com/SamerW/MindMosaicAIExam.git"
 BRANCH="main"
 CLONE_DIR="MindMosaicAIExam"
 
