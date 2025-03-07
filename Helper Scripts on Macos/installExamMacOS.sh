@@ -91,9 +91,9 @@ else
 fi
 
 # Clone the GitHub repository
-REPO_URL="https://github.com/anisbey/isourceit.git"
-BRANCH="ollama-integration"
-CLONE_DIR="isourceit"
+REPO_URL="https://github.com/SamerW/MindMosaicAIExam/MindMosaicAIExam.git"
+BRANCH="main"
+CLONE_DIR="MindMosaicAIExam"
 
 # Check if the current directory is inside the isourceit directory
 if [[ "$(pwd)" == *"/$CLONE_DIR"* ]]; then
