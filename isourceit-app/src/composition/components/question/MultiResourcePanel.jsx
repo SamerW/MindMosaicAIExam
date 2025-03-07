@@ -6,11 +6,13 @@ import { Tab, Tabs } from 'react-bootstrap';
 import ChatAIChat from './ChatAIChat';
 import ChatAIChatCopyPaste from './ChatAIChatCopyPaste';
 import ExternalResourcesPanel from './ExternalResourcesPanel';
+import SearchEnginePanel from './SearchEnginePanel';
 
 function MultiResourcePanel({
   chats, chatActions, onSubmitChat, resources, addResource,
-  removeResource, submitting, className, style,
+  removeResource, submitting, className, style,searchEngines,questionId,
 }) {
+
   return (
     <Tabs
       defaultActiveKey={chats[0]?.id ?? ''}
@@ -21,26 +23,39 @@ function MultiResourcePanel({
       {
         chats.map((chat) => (
           <Tab key={chat.id} eventKey={chat.id} title={chat.title}>
-            {
-              chat.copyPaste ? (
-                <ChatAIChatCopyPaste
-                  chatActions={chatActions[chat.id]}
-                  onSubmit={(data) => onSubmitChat({ ...data, chat })}
+                     {
+              chat.id.includes("engine") ? (
+                <SearchEnginePanel
+                  resources={resources}
+                  addResource={addResource}
+                  removeResource={removeResource}
                   submitting={submitting}
-                  chatId={chat.id}
+                  onSubmit={(data) => searchEngines({ ...data, chat })}
+                  engineId={chat.id}
+                  questionId={questionId}
                 />
               ) : (
-                <ChatAIChat
-                  chatActions={chatActions[chat.id]}
-                  onSubmit={(data) => onSubmitChat({ ...data, chat })}
-                  submitting={submitting}
-                  chatId={chat.id}
-                />
+                chat.copyPaste ? (
+                  <ChatAIChatCopyPaste
+                    chatActions={chatActions[chat.id]}
+                    onSubmit={(data) => onSubmitChat({ ...data, chat })}
+                    submitting={submitting}
+                    chatId={chat.id}
+                  />
+                ) : (
+                  <ChatAIChat
+                    chatActions={chatActions[chat.id]}
+                    onSubmit={(data) => onSubmitChat({ ...data, chat })}
+                    submitting={submitting}
+                    chatId={chat.id}
+                  />
+                )
               )
             }
           </Tab>
         ))
       }
+
       <Tab eventKey="resource" title="External resources">
         <ExternalResourcesPanel
           resources={resources}

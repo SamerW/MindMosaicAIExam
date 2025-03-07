@@ -2,7 +2,7 @@ import { makeAutoObservable, runInAction } from 'mobx';
 import { dateTimeStringToDate } from '../../services/timeService';
 import {
   addExternalResourceQuestion, askChatAIQuestion, removeExternalResourceQuestion,
-  writeFinalAnswerQuestion, writeInitialAnswerQuestion,
+  writeFinalAnswerQuestion, writeInitialAnswerQuestion,searchEngineQuestion,
 } from './netLayer';
 
 class StuExamQuestion {
@@ -19,6 +19,8 @@ class StuExamQuestion {
   _pendingFinalAnswerTs;
 
   _chatActions;
+
+  _searchActions;
 
   _resources;
 
@@ -70,6 +72,10 @@ class StuExamQuestion {
     return this._chatActions;
   }
 
+  get searchActions() {
+    return this._searchActions;
+  }
+
   get resources() {
     return this._resources;
   }
@@ -116,6 +122,36 @@ class StuExamQuestion {
         prompt: action.prompt,
         answer,
         pending: !action.achieved,
+        timestamp: dateTimeStringToDate(action.timestamp),
+      });
+    });
+  }
+
+  async searchEngine({ query, results, engine }) {
+
+    await this.resync();    
+    this._searchActionPromise = searchEngineQuestion({
+      questionId: this._id,
+      query,
+      results,
+      engineId: engine.id,
+      engineKey: engine.chat_key,
+     
+    });
+    const action = await this._searchActionPromise;
+
+    this._searchActionPromise = null;
+    runInAction(() => {
+      let actionTab = this._searchActions[engine.id];
+      if (!actionTab) {
+        console.warn('Received chat action but action tab unknown');
+        actionTab = [];
+        this._searchActions[engine.id] = actionTab;
+      }
+      actionTab.push({
+        id: action.id,
+        query: action.query,
+        results,
         timestamp: dateTimeStringToDate(action.timestamp),
       });
     });

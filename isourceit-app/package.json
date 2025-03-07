@@ -1,7 +1,7 @@
 {
   "name": "i-source-it-app",
-  "appTitle": "I Source It",
-  "version": "1.0.0",
+  "appTitle": "MindMosaicAIExam",
+  "version": "1.0.1",
   "description": "AI Chat enhanced exam app",
   "main": "index.jsx",
   "scripts": {

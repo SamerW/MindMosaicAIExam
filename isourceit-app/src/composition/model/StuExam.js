@@ -20,6 +20,8 @@ class StuExam {
 
   _chatChoices;
 
+  _engineChoices;
+
   _started;
 
   _ended;
@@ -76,6 +78,10 @@ class StuExam {
     return this._chatChoices;
   }
 
+  get engineChoices() {
+    return this._engineChoices;
+  }
+
   get started() {
     return this._started;
   }
@@ -115,6 +121,7 @@ class StuExam {
     this._durationMinutes = jsonData.duration_minutes ?? this._durationMinutes;
     this._timeout = dateTimeStringToDate(jsonData.timeout) ?? this._timeout;
     this._chatChoices = jsonData.chat_choices ?? this._chatChoices;
+    this._engineChoices = jsonData.engine_choices ?? this._engineChoices;
     this._started = jsonData.started ?? this._started;
     this._ended = jsonData.ended ?? this._ended;
     this._nbQuestions = jsonData.nb_questions ?? this._nbQuestions;

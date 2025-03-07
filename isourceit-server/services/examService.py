@@ -107,7 +107,8 @@ def create_exam(exam_data: Dict) -> Exam:
     # create the exam
     mongo_dao = MongoDAO()
     exam_id = examRepository.create_exam(mongo_dao, exam_to_create)
-
+    LOG.info(" --  exam to")
+    LOG.info(exam_to_create)
     # inject id to the model to return and remove the _id and exam type
     exam_to_create['id'] = str(exam_id)
     exam_to_create.pop('_id', None)
@@ -189,7 +190,8 @@ def find_composition_exam_by_id(exam_id: str) -> Optional[Union[Exam, Mapping]]:
         'description': 1,
         'duration_minutes': 1,
         'questions': 1,
-        'selected_chats': 1
+        'selected_chats': 1,
+        'selected_search_engines' :1
     })
     if exam is None:
         raise NotFound("Exam not found")
@@ -197,10 +199,12 @@ def find_composition_exam_by_id(exam_id: str) -> Optional[Union[Exam, Mapping]]:
     # retrieve the student's exam trace
     students_exam_actions = studentActionRepository.get_actions_for_student_for_exam(mongo_dao, session_username(),
                                                                                      exam_id)
-
+    
     # Compute the full composition model
     chat_ai_mgr = ChatAIManager()
     chat_choices = chat_ai_mgr.compute_student_choice_from_exam(exam)
+    LOG.info("    chat_choices")
+    LOG.info(chat_choices)
     now = datetime.utcnow()
     composition_exam = {
         'id': str(exam['_id']),

@@ -8,8 +8,10 @@ from flask_socketio import SocketIO
 from mongoDAO.MongoDAO import MongoDAO
 from mongoDAO.chatAIDescriptionRepository import clear_chatai_descriptions, find_all_chatai_descriptions, \
     add_chatai_description
+from mongoDAO.searchEngineDescriptionRepository import clear_search_engine_descriptions, add_search_engine_description, find_all_search_engine_descriptions
 from mongoDAO.studentActionRepository import update_chat_ai_answer, set_chat_ai_achieved
 from mongoModel.ChatAIDescription import ChatAIDescription
+from mongoModel.SearchEngineDescription import SearchEngineDescription
 from mongoModel.Exam import Exam
 from mongoModel.SocratQuestionnaire import SocratQuestionnaire
 from mongoModel.StudentAction import AskChatAI
@@ -48,10 +50,15 @@ def handle_chat_answer(config: Dict, queue: JoinableQueue):
                         LOG.warning('Receive model answer with chat key')
                         continue
                     model_key = response.get('answer')
+                    LOG.info(" --  herreee")
+                    LOG.info(chat_key)
+                    LOG.info(model_key)
                     if model_key is not None:
                         description = ChatAIDescription(chat_key=chat_key, model_key=model_key)
                         add_chatai_description(mongo_dao, description)
                         LOG.info("New Chat AI Model discovered! %s : %s", chat_key, model_key)
+                        # search engine loading
+                        
                 elif request_type == 'comment':
                     action_id = response.get('action_id')
                     user_sid = response.get('user_sid')
@@ -93,6 +100,7 @@ class ChatAIManager(metaclass=Singleton):
         self._ai_handlers_by_chat_key: Dict[str, ChatAIHandler] = {}
         self._config: Dict = config
         self._configure_handlers()
+        
 
     def _configure_handlers(self):
         if self._config is not None:
@@ -111,6 +119,11 @@ class ChatAIManager(metaclass=Singleton):
         # Add copyPast
         h = CopyPasteHandler(self._answer_queue)
         self._ai_handlers_by_chat_key[h.chat_key] = h
+        ####
+        mongo_dao = MongoDAO()
+        description = SearchEngineDescription(search_engine_name="chat_keyyyy", api_key="model_keyyy")
+        add_search_engine_description(mongo_dao, description)
+        LOG.info("New search engine Model discovered!")
     
     def _configure_ollama_ip(self,ip):
         if ip is not None:
@@ -146,7 +159,10 @@ class ChatAIManager(metaclass=Singleton):
         LOG.debug("Clear chat AI model description in database")
         mongo_dao = MongoDAO()
         clear_chatai_descriptions(mongo_dao)
-
+        # clear engine desc in db
+        LOG.debug("Clear search engine description in database")
+        mongo_dao = MongoDAO()
+        clear_search_engine_descriptions(mongo_dao)
         # for all connected handler, ask their model
         LOG.debug("Ask handler their models")
         request_identifiers = dict(request_type='model')
@@ -157,6 +173,32 @@ class ChatAIManager(metaclass=Singleton):
     def _generate_available_chats(self) -> Dict:
         mongo_dao = MongoDAO()
         for chat_desc in find_all_chatai_descriptions(mongo_dao):
+            LOG.info("ggghh  ")
+            LOG.info(chat_desc)
+            chat_key = chat_desc['chat_key']
+            model_key = chat_desc['model_key']
+            handler = self._ai_handlers_by_chat_key.get(chat_key)
+            if handler is None:
+                LOG.warning("Got model associated to a chat key without any handler")
+                continue
+            model_title = handler.get_model_name(model_key)
+            if model_title is None:
+                model_title = 'Unknown/No model'
+            yield {
+                'id': "{}.{}".format(chat_key, model_key),
+                'chat_key': chat_key,
+                'model_key': model_key,
+                'title': "{}. {}.".format(handler.name, model_title),
+                'copyPaste': handler.copy_past,
+                'privateKeyRequired': handler.private_key_required,
+               # 'models': handler.request_available_models()
+            }
+    
+    def _generate_available_engines(self) -> Dict:
+        mongo_dao = MongoDAO()
+        for chat_desc in find_all_search_engine_descriptions(mongo_dao):
+            LOG.info("ggghh --- engines ")
+            LOG.info(chat_desc)
             chat_key = chat_desc['chat_key']
             model_key = chat_desc['model_key']
             handler = self._ai_handlers_by_chat_key.get(chat_key)
@@ -179,10 +221,19 @@ class ChatAIManager(metaclass=Singleton):
     @property
     def available_chats(self) -> List[Dict]:
         return list(self._generate_available_chats())
+    
+    @property
+    def available_engines(self) -> List[Dict]:
+        return list(self._generate_available_engines())
 
     def compute_student_choice_from_exam(self, exam: Exam) -> Any:
         available_chat_dict = dict((c['id'], c) for c in self.available_chats)
+        #available_engines_dict = dict((c['id'], c) for c in self.available_engines)
         choices = []
+        LOG.info(" available chat --- ")
+        LOG.info(available_chat_dict)
+        LOG.info(" exzmmm --- ")
+        LOG.info(exam)
         for id in exam['selected_chats'].keys():
             chat_info = available_chat_dict.get(id)
             if chat_info is None:
@@ -192,7 +243,22 @@ class ChatAIManager(metaclass=Singleton):
             if chat_info.get('copyPaste') is True:
                 choice['copyPaste'] = True
             choices.append(choice)
+        search_engines = exam['selected_search_engines']
+        for engine_name, engine_data in search_engines.items():
+            api_key = engine_data.get('api_key')
+            if id is None:
+                continue
+            choice = dict(id=engine_name, chat_key=api_key, model_key=engine_name,
+                          title=engine_name)
+            if chat_info.get('copyPaste') is True:
+                choice['copyPaste'] = True
+            choices.append(choice)
+
+        LOG.info("choices")
+        LOG.info(choices)
         return choices
+    
+    
 
     def compute_student_choice_from_socrat(self, socrat: SocratQuestionnaire) -> Any:
         available_chat_dict = dict((c['id'], c) for c in self.available_chats)

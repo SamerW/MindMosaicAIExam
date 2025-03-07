@@ -36,6 +36,33 @@ export function commentOnAnswer({
     .then((res) => res.data);
 }
 
+export function sendQuerySearch({
+  engine_id,query,question_id,
+}) {
+  return ROOT_AX.post(`${ROOT_URL}/composition/sendSearchQuery`, {
+    action_type: 'SearchEngine',
+    search_engine_id: engine_id,
+    query: query,
+    question_idx: question_id,
+    search_engine_key: "",
+  })
+    .then((res) => res.data);
+}
+
+export function visitUrl({
+  engine_id,url,question_id,
+}) {
+  return ROOT_AX.post(`${ROOT_URL}/composition/visitUrl`, {
+    action_type: 'VisitUrl',
+    search_engine_name: engine_id,
+    url: url,
+    question_idx: question_id,
+  })
+    .then((res) => res.data);
+}
+
+
+
 export function saveOllamaIP({
   OllamaIP
 }) {

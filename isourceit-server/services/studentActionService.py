@@ -11,9 +11,10 @@ from mongoDAO.MongoDAO import MongoDAO
 from mongoModel.Exam import Exam
 from mongoModel.SocratQuestionnaire import SocratQuestionnaire
 from mongoModel.StudentAction import STUDENT_ACTION_TYPE_MAPPING, EXTERNAL_RESOURCE_TYPE, \
-    AskChatAI, StartExam, SubmitExam, ExternalResource, \
+    AskChatAI, StartExam, SubmitExam, ExternalResource, SearchEngine,VisitUrl, \
     WroteInitialAnswer, WroteFinalAnswer, StudentAction, ChangedQuestion, LostFocus
 from services import ChatAIManager
+from services.SearchEnginesManager import BingSearchClient,BraveSearch
 from services.ChatAIManager import ChatAIManager
 from services.securityService import decrypt_chat_api_key
 from sessions.sessionManagement import session_username, update_session_student_info, \
@@ -36,7 +37,9 @@ def __prepare_action(action_data: Dict, action_class: Any) -> Any:
         action_data['timestamp'] = datetime.utcnow()
     action_data['exam_id'] = session_exam_id()
     action_data['student_username'] = session_username()
-
+    LOG.info("___handleeee")
+    LOG.info(action_class)
+    LOG.info(action_data)
     action = cast(action_class, pydantic.create_model_from_typeddict(action_class)(**action_data).dict())
     # remove action id and _id
     action.pop('id', None)
@@ -47,7 +50,8 @@ def __prepare_action(action_data: Dict, action_class: Any) -> Any:
 def __handle_exam_action(action_data: Dict, action_class: Any, exam: Exam, mongo_dao: MongoDAO) -> Mapping:
     # Clean action_data and creation action instance
     action = __prepare_action(action_data, action_class)
-
+    LOG.info("___handleeee")
+    LOG.info(action)
     if action_class == StartExam:
         if is_exam_started():
             raise BadRequest('Cannot handle Start exam action; exam already started')
@@ -94,7 +98,8 @@ def __handle_exam_action(action_data: Dict, action_class: Any, exam: Exam, mongo
 
     # save action into db
     action_id = studentActionRepository.create_student_action(mongo_dao, action)
-
+    LOG.info(" eexaam --")
+    LOG.info(exam)
     # process response and specific handling of action
     if action_class == ChangedQuestion:
         return {
@@ -113,6 +118,8 @@ def __handle_exam_action(action_data: Dict, action_class: Any, exam: Exam, mongo
             'page_hidden': action['page_hidden'],
         }
     elif action_class == AskChatAI:
+        LOG.info(" -ask chata")
+        LOG.info(action)
         exam_chat_settings = exam['selected_chats'].get(action['chat_id'])
         if exam_chat_settings is None:
             LOG.warning('no exam chat sttings for chat_id {}'.format(action['chat_id']))
@@ -139,6 +146,40 @@ def __handle_exam_action(action_data: Dict, action_class: Any, exam: Exam, mongo
             result['achieved'] = True
             result['answer'] = '<Chat service connection error. Unable to process the promp>'
         return result
+    
+    elif action_class == SearchEngine:
+        LOG.info("     search ---")
+        LOG.info(action)
+        exam_search_engine_settings = exam['selected_search_engines'].get(action['search_engine_id'])
+        if exam_search_engine_settings is None:
+            LOG.warning('no exam chat sttings for chat_id {}'.format(action['search_engine_id']))
+            raise BadRequest('Bad chat_id')
+        if "Bing" in action["search_engine_id"]:
+            private_key = decrypt_chat_api_key(exam_search_engine_settings.get('api_key', None))
+            bing_search = BingSearchClient(private_key)
+            result = bing_search.search(action["query"])          
+        if "Brave" in action["search_engine_id"]:
+            private_key = decrypt_chat_api_key(exam_search_engine_settings.get('api_key', None))
+            brave_search = BraveSearch(private_key)
+            result = brave_search.search(action["query"])
+        if result is None : 
+            return [{"title":"Not found","description":"The search engine does not work","url":""}]
+        else:
+            return result
+       
+    
+    elif action_class == VisitUrl:
+        LOG.info("   visit url --- ")
+        res = {
+            'timestamp': action['timestamp'],
+            'question_idx': action['question_idx'],
+            'id': action_id,
+            'search_engine_name': action['search_engine_name'],
+            'url': action['url'],
+        }
+       
+        return res
+    
     elif action_class == ExternalResource:
         return {
             'timestamp': action['timestamp'],
@@ -309,8 +350,11 @@ def handle_action(action_data: Dict) -> Mapping:
         raise BadRequest("Missing action type")
     # cast action according to action type
     action_class = STUDENT_ACTION_TYPE_MAPPING.get(action_data['action_type'], None)
+
     if action_class is None:
-        raise BadRequest("Bad action type")
+        action_class = action_data['action_type']
+        if action_class is None:
+            raise BadRequest("Bad action type")
 
     # According to the exam type, retrieve the proper exam object and call the proper treatment
     mongo_dao = MongoDAO()
@@ -319,7 +363,8 @@ def handle_action(action_data: Dict) -> Mapping:
         exam = examRepository.find_exam_by_id(mongo_dao, session_exam_id(),
                                               projection={'duration_minutes': 1,
                                                           'questions': 1,
-                                                          'selected_chats': 1})
+                                                          'selected_chats': 1,
+                                                          'selected_search_engines': 1,})
         if exam is None:
             raise BadRequest("No exam matching session exam id")
         return __handle_exam_action(action_data, action_class, exam, mongo_dao)

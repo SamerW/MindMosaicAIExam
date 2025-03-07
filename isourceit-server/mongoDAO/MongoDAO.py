@@ -8,6 +8,8 @@ from pymongo.collection import Collection
 from pymongo.database import Database
 
 from mongoModel.ChatAIDescription import ChatAIDescription
+from mongoModel.SearchEngineDescription import SearchEngineDescription
+
 from mongoModel.Exam import Exam
 from mongoModel.ReportArchive import ReportArchive
 from mongoModel.SocratQuestionnaire import SocratQuestionnaire
@@ -24,6 +26,7 @@ USER_COL = 'users'
 CHAT_AI_DESC_COL = 'chatAIDescriptions'
 SESSION_COL = 'flaskSessions'
 REPORT_ARCHIVE_COL = 'reportArchives'
+SEARCH_ENGINE_DESC_COL = 'searchEngineDescriptions'
 
 LOG = logging.getLogger(__name__)
 
@@ -83,6 +86,12 @@ class MongoDAO(metaclass=Singleton):
         if self.__db is None:
             raise Exception('No available database')
         return self.__db[CHAT_AI_DESC_COL]
+    
+    @property
+    def searchengine_desc_col(self) -> Collection[SearchEngineDescription]:
+        if self.__db is None:
+            raise Exception('No available database')
+        return self.__db[SEARCH_ENGINE_DESC_COL]
 
     @property
     def report_archive_col(self) -> Collection[ReportArchive]:

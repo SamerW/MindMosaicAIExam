@@ -96,7 +96,6 @@ function ExamView({ examType }) {
                     <ButtonGroup vertical>
                       <Button as={Link} to="analytics" variant="success">Show analytics panel</Button>
                       <Button onClick={generatePdf} variant="primary">Generate PDF report</Button>
-                      <Button onClick={handleIPModalOpen} variant="info">Edit Ollama IP</Button>
                       <Button disabled={!exam.editable} variant="warning" onClick={editExam}>Edit</Button>
                     </ButtonGroup>
                   </Col>

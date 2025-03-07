@@ -35,6 +35,9 @@ def encrypt_exam_chat_api_keys(exam: Exam) -> Exam:
     for chat_value in exam['selected_chats'].values():
         if 'api_key' in chat_value:
             chat_value['api_key'] = f_cypher.encrypt(chat_value['api_key'].encode('UTF-8')).decode('UTF-8')
+    for chat_value in exam['selected_search_engines'].values():
+        if 'api_key' in chat_value:
+            chat_value['api_key'] = f_cypher.encrypt(chat_value['api_key'].encode('UTF-8')).decode('UTF-8')
     return exam
 
 

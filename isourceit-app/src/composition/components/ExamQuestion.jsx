@@ -11,10 +11,21 @@ function ExamQuestion({ question, chatChoices }) {
   const [chatRscSubmitting, setChatRscSubmitting] = useState(false);
 
 
+
+
   const submitChatAI = ({ prompt, answer, chat, image = null }) => {
     setChatRscSubmitting(true);
 
     question.askChatAI({ prompt, answer, chat, image })
+      .finally(() => setChatRscSubmitting(false));
+  };
+
+
+
+  const submitQuery = ({ query, results, engine }) => {
+    setChatRscSubmitting(true);
+
+    question.searchEngine({ query, results, engine })
       .finally(() => setChatRscSubmitting(false));
   };
 
@@ -29,6 +40,7 @@ function ExamQuestion({ question, chatChoices }) {
     question.deleteExternalResource(rscId)
       .finally(() => setChatRscSubmitting(false));
   };
+
 
   return (
     <Row className="justify-content-center">
@@ -45,7 +57,7 @@ function ExamQuestion({ question, chatChoices }) {
                 <AnswerInput
                   answer={question.initAnswer}
                   onAnswerChange={(txt) => { question.initAnswer = txt; }}
-                  label="Initial answerrr"
+                  label="Initial answer"
                   controlId="ExamQuestion-initialAnswer"
                 />
               </Col>
@@ -62,6 +74,8 @@ function ExamQuestion({ question, chatChoices }) {
                   addResource={addResource}
                   removeResource={removeResource}
                   submitting={chatRscSubmitting}
+                  searchEngines={submitQuery}
+                  questionId={question.id}
                 />
               </Col>
             </Row>

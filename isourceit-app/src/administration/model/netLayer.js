@@ -68,6 +68,13 @@ export function getAppAvailableChats() {
     .then((res) => res.data);
 }
 
+
+
+export function getAppAvailableSearchEngines() {
+  return ROOT_AX.get(`${ROOT_URL}/admin/app-settings/search-available`)
+    .then((res) => res.data);
+}
+
 export function getDefaultSocratInitPrompt() {
   return ROOT_AX.get(`${ROOT_URL}/admin/app-settings/default-socrat-init-prompt`)
     .then((res) => res.data);

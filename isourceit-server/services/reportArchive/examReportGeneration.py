@@ -40,6 +40,8 @@ def create_action_detail_fields(action: StudentAction) -> Tuple[str, str, str]:
     :return: Tuple (Trace type, question, detail)
     """
     a_type = action['action_type']
+    LOG.info("  --- - - ---   report")
+    LOG.info(action)
     question = str(action['question_idx'] + 1) if action.get('question_idx', None) is not None else '-'
     if a_type == 'StartExam':
         return 'Started Exam', question, '-'
@@ -60,6 +62,17 @@ def create_action_detail_fields(action: StudentAction) -> Tuple[str, str, str]:
         'Answer: {}'.format(action['answer']),
         'Comment: {}'.format(comment)
     )
+    elif a_type == 'SearchEngine':
+        return 'Use Search Engine', question, (
+        'Engine id: {}'.format(action['search_engine_id']),
+        'Query: {}'.format(action['query'])
+    )
+
+    elif a_type == 'VisitUrl':
+        return 'Visit an URL', question, (
+        'Engine : {}'.format(action['search_engine_name']),
+        'URL: {}'.format(action['url'])
+    )
     elif a_type == 'AddExternalResource':
         return 'Added External Resource', question, 'type: {}, title: {}, description: {}, removed: {}'\
             .format(action['rsc_type'], action['title'], action['description'], format_bool(bool(action['removed'])))
@@ -73,7 +86,7 @@ def create_action_detail_fields(action: StudentAction) -> Tuple[str, str, str]:
 
 def create_action_summary(actions: Iterable[StudentAction]) -> ActionSummary:
     action_sum = ActionSummary(nb_initial_ans=0, nb_final_ans=0, nb_chat_ai=0, nb_rsc_add_not_removed=0,
-                               nb_focus_lost=0, total_time_focus_lost_sec=0, has_submitted=False, started_ts=None,
+                               nb_focus_lost=0,nb_engine_search=0,nb_visited_url=0, total_time_focus_lost_sec=0, has_submitted=False, started_ts=None,
                                initial_answers_by_qidx=dict(), final_answers_by_qidx=dict())
     for action in actions:
         a_type = action['action_type']
@@ -89,6 +102,10 @@ def create_action_summary(actions: Iterable[StudentAction]) -> ActionSummary:
             action_sum['initial_answers_by_qidx'][action['question_idx']] = action['text']
         elif a_type == 'AskChatAI':
             action_sum['nb_chat_ai'] += 1
+        elif a_type == 'SearchEngine':
+            action_sum['nb_engine_search'] += 1
+        elif a_type == 'VisitUrl':
+            action_sum['nb_visited_url'] += 1
         elif a_type == 'AddExternalResource':
             if not action['removed']:
                 action_sum['nb_rsc_add_not_removed'] += 1
@@ -231,10 +248,12 @@ def generate_action_summary(action_summary: ActionSummary) -> str:
 <li>#inital answer edition: {:d}</li>
 <li>#final answer edition: {:d}</li>
 <li>#chat AI interaction: {:d}</li>
+<li>#search engine interaction: {:d}</li>
+<li>#visited URLs : {:d}</li>
 <li>#resource added not removed: {:d}</li>
 <li>#focus lost: {:d}</li>
 <li>total time focus lost: {}</li>
-</ul>""".format(action_summary['nb_initial_ans'], action_summary['nb_final_ans'], action_summary['nb_chat_ai'],
+</ul>""".format(action_summary['nb_initial_ans'], action_summary['nb_final_ans'], action_summary['nb_chat_ai'],action_summary['nb_engine_search'],action_summary['nb_visited_url'],
                 action_summary['nb_rsc_add_not_removed'], action_summary['nb_focus_lost'],
                 format_sec_duration(action_summary['total_time_focus_lost_sec']))
 

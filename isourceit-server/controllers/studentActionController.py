@@ -36,6 +36,22 @@ def send_message():
     studentActionService.handle_comment_answer(question_id, data['comment'])
     return '', 204
 
+@student_action_controller.route("/api/rest/composition/sendSearchQuery", methods=['POST'])
+@secured_endpoint(STUDENT_ROLE)
+def send_search_query():
+    data = request.get_json(force=False)
+    LOG.info("data search engine ")
+    LOG.info(data)
+    res = studentActionService.handle_action(data)
+    return res
+
+@student_action_controller.route("/api/rest/composition/visitUrl", methods=['POST'])
+@secured_endpoint(STUDENT_ROLE)
+def visit_url():
+    data = request.get_json(force=False)
+    res = studentActionService.handle_action(data)
+    return res
+
 @student_action_controller.route("/api/rest/composition/actions/external-resources/<action_id>", methods=['DELETE'])
 @secured_endpoint(STUDENT_ROLE)
 def delete_resource(action_id: str):

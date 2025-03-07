@@ -35,15 +35,6 @@ def create_exam():
     return examService.create_exam(data)
 
 
-@exam_controller.route("/api/rest/admin/saveOllamaIP", methods=['POST'])
-@secured_endpoint(TEACHER_ROLE, ADMIN_ROLE)
-def saveOllamaIP():
-    data = request.get_json(force=False)
-    OllamaHandler2.update_ollama_url(data["OllamaIP"])
-    LOG.info("  upodate IP ollama")
-    LOG.info(data)
-    return "done"
-
 @exam_controller.route("/api/rest/admin/exams/<exam_id>", methods=['PUT'])
 @secured_endpoint(TEACHER_ROLE, ADMIN_ROLE)
 def update_exam(exam_id: str):

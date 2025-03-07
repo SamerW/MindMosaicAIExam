@@ -11,3 +11,4 @@ class Exam(BaseExam):
     questions: List[Dict[pydantic.StrictStr, pydantic.StrictStr]]
     duration_minutes: pydantic.StrictInt
     selected_chats: NotRequired[Dict[pydantic.StrictStr, Any]]  # { chat_key, private_key }
+    selected_search_engines: NotRequired[Dict[pydantic.StrictStr, Any]]  # { chat_key, private_key }

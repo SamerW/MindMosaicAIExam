@@ -22,6 +22,7 @@ function initState() {
     rawAuthors: '',
     rawStudents: '',
     selectedChats: [],
+    selectedSearchEngines: [],
     validatedForm: false,
   };
 }
@@ -38,6 +39,18 @@ function computeSelectedChats(availableChats, examSelectedChats = null) {
   });
 }
 
+function computeSelectedSearchEngines(availableSearchEngines, examSelectedSearchEngines = null) {
+  return availableSearchEngines.map((engine) => {
+    const engineSelector = { ...engine };
+    const selectedEngine = examSelectedSearchEngines ? examSelectedSearchEngines[engineSelector.id] : null;
+    engineSelector.selected = !!selectedEngine;
+    if (engineSelector.selected && engineSelector.privateKeyRequired) {
+      engineSelector.apiKey = selectedEngine.api_key;
+    }
+    return engineSelector;
+  });
+}
+
 function reduce(state, action) {
   switch (action.type) {
     case 'set-loading':
@@ -47,9 +60,10 @@ function reduce(state, action) {
         ...initState(),
         loading: false,
         selectedChats: computeSelectedChats(action.availableChats),
+        selectedSearchEngines: computeSelectedSearchEngines(action.availableSearchEngines),
       };
     case 'set-for-edition': {
-      const { exam, availableChats } = action;
+      const { exam, availableChats, availableSearchEngines } = action;
       return {
         ...state,
         loading: false,
@@ -62,6 +76,7 @@ function reduce(state, action) {
         rawAuthors: exam.authors.map((a) => a.username).join('\n'),
         rawStudents: exam.students.map((s) => s.username).join('\n'),
         selectedChats: computeSelectedChats(availableChats, exam.selectedChats),
+        selectedSearchEngines: computeSelectedSearchEngines(availableSearchEngines, exam.selectedSearchEngines)
       };
     }
     case 'set-raw-field':
@@ -120,6 +135,30 @@ function reduce(state, action) {
           ...state.selectedChats.slice(action.chatIdx + 1),
         ],
       };
+      case 'switch-selected-search-engine':
+      return {
+        ...state,
+        selectedSearchEngines: [
+          ...state.selectedSearchEngines.slice(0, action.engineIdx),
+          {
+            ...state.selectedSearchEngines[action.engineIdx],
+            selected: !state.selectedSearchEngines[action.engineIdx].selected,
+          },
+          ...state.selectedSearchEngines.slice(action.engineIdx + 1),
+        ],
+      };
+    case 'set-search-engine-apiKey':
+      return {
+        ...state,
+        selectedSearchEngines: [
+          ...state.selectedSearchEngines.slice(0, action.engineIdx),
+          {
+            ...state.selectedSearchEngines[action.engineIdx],
+            apiKey: action.value,
+          },
+          ...state.selectedSearchEngines.slice(action.engineIdx + 1),
+        ],
+      };
     case 'set-saving':
       return { ...state, saving: action.value };
     case 'set-validated-form':
@@ -151,6 +190,12 @@ function computeExamJsonFromState(state, examId) {
         acc[k] = v;
         return acc;
       }, {}),
+    selected_search_engines: state.selectedSearchEngines.filter((c) => c.selected)
+      .map((c) => [c.id, c.apiKey ? { api_key: c.apiKey } : {}])
+      .reduce((acc, [k, v]) => {
+        acc[k] = v;
+        return acc;
+      }, {}),
   };
   if (examId) {
     jsonRep.id = examId;
@@ -168,12 +213,20 @@ function ExamEditor({ newExam }) {
   useEffect(() => {
     dispatch({ type: 'set-loading' });
     if (newExam && !examId) {
-      manager.loadAvailableChats().then((availableChats) => dispatch({ type: 'set-for-creation', availableChats }));
+      Promise.all([
+        manager.loadAvailableChats(),
+        manager.loadAvailableSearchEngines()
+      ]).then(([availableChats, availableSearchEngines]) =>
+        dispatch({ type: 'set-for-creation', availableChats, availableSearchEngines })
+      );
+      
+
     } else if (!newExam && examId) {
       Promise.all([
         manager.loadAvailableChats(),
+        manager.loadAvailableSearchEngines(),
         manager.loadDetailedExam({ examId }),
-      ]).then(([availableChats, exam]) => dispatch({ type: 'set-for-edition', exam, availableChats }));
+      ]).then(([availableChats, exam]) => dispatch({ type: 'set-for-edition', exam, availableChats, availableSearchEngines }));
     } else {
       console.warn(`Illegal state for exam creation. NewExam: ${newExam} | examId: ${examId}`);
     }
@@ -381,6 +434,44 @@ function ExamEditor({ newExam }) {
                       </Row>
                     ))
                   }
+                </Col>
+              </Row>
+              <Row>
+                <Col xs={12}>
+                  <h3 className="text-primary">Search Engines Allowed</h3>
+                  {(state.selectedSearchEngines || []).map((engine, idx) => (
+                    <Row key={engine.id} className="mb-3">
+                      <Col xs="auto">
+                        <Form.Check
+                          type="switch"
+                          id={`search-engine-${engine.id}`}
+                          label={engine.title}
+                          checked={engine.selected}
+                          onChange={() => dispatch({ type: 'switch-selected-search-engine', engineIdx: idx })}
+                        />
+                      </Col>
+                      {
+                          engine.selected && engine.privateKeyRequired && (
+                            <Col xs="auto">
+                              <Form.Group controlId={`search-engine-${engine.id}-pvKey`}>
+                                <Form.Label>Search API Key</Form.Label>
+                                <Form.Control
+                                  type="text"
+                                  placeholder="you private API key"
+                                  required
+                                  value={engine.apiKey ?? ''}
+                                  onChange={(e) => dispatch({ type: 'set-search-engine-apiKey', engineIdx: idx, value: e.target.value })}
+                                />
+                                <Form.Text className="text-muted">
+                                  Your private key will be used by all the examinee,
+                                  but will never be communicated to anyone
+                                </Form.Text>
+                              </Form.Group>
+                            </Col>
+                          )
+                        }
+                    </Row>
+                  ))}
                 </Col>
               </Row>
               <Row className="justify-content-center mt-3">

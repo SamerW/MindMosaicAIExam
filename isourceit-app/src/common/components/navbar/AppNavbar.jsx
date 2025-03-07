@@ -7,7 +7,7 @@ import Navbar from 'react-bootstrap/Navbar';
 // import AppNavbarMenu from './AppNavbarMenu';
 import './AppNavbar.scss';
 
-import logoPict from '../../../assets/logo.png';
+import logoPict from '../../../assets/mindmosaic_logo.png';
 import AppNavbarMenu from './AppNavbarMenu';
 
 function AppNavbar() {
@@ -16,7 +16,7 @@ function AppNavbar() {
       <Navbar.Brand as={Link} to="/">
         <img
           src={logoPict}
-          width="30"
+          width="150"
           height="30"
           className="d-inline-block align-top"
           alt={`${APP_ENV_APP_TITLE} Logo`}

@@ -178,6 +178,54 @@ _AskChatAIAction.propTypes = {
   action: MPropTypes.objectOrObservableObject.isRequired,
 };
 
+export const SearchEngineAction = observer(_SearchEngineAction);
+
+function _SearchEngineAction({ action, ...props }) {
+
+  return (
+    <BaseAction title={`(Q${action.question_idx + 1}) Search Engine`} timestamp={action.timestamp} variant="success" {...props}>
+      <p className="mb-0" style={{ whiteSpace: 'pre-line' }}>
+        <u>Query:</u>
+        {' '}
+        {action.query}
+      </p>
+      <p className="mb-1" style={{ whiteSpace: 'pre-line' }}>
+        <u>Results:</u>
+        {' '}
+        {action.results}
+      </p>
+    </BaseAction>
+  );
+}
+
+_SearchEngineAction.propTypes = {
+  action: MPropTypes.objectOrObservableObject.isRequired,
+};
+
+export const VisitUrlAction = observer(_VisitUrlAction);
+
+function _VisitUrlAction({ action, ...props }) {
+
+  return (
+    <BaseAction title={`(Q${action.question_idx + 1}) Visit URL`} timestamp={action.timestamp} variant="success" {...props}>
+      <p className="mb-0" style={{ whiteSpace: 'pre-line' }}>
+        <u>Url:</u>
+        {' '}
+        {action.query}
+      </p>
+      <p className="mb-1" style={{ whiteSpace: 'pre-line' }}>
+        <u>Engine:</u>
+        {' '}
+        {action.search_engine_name}
+      </p>
+    </BaseAction>
+  );
+}
+
+_SearchEngineAction.propTypes = {
+  action: MPropTypes.objectOrObservableObject.isRequired,
+};
+
 export const AskChatAIAction = observer(_AskChatAIAction);
 
 function _AddResourceAction({ action, ...props }) {
@@ -261,6 +309,10 @@ export default function createActionView({ action, key, rightPosition = false })
       return (<WroteInitialAnswerAction key={key} action={action} rightPosition={rightPosition} />);
     case 'AskChatAI':
       return (<AskChatAIAction key={key} action={action} rightPosition={rightPosition} />);
+    case 'SearchEngine':
+      return (<SearchEngineAction key={key} action={action} rightPosition={rightPosition} />);
+    case 'VisitedUrl':
+      return (<VisiteUrlAction key={key} action={action} rightPosition={rightPosition} />);
     case 'AddExternalResource':
       return (<AddResourceAction key={key} action={action} rightPosition={rightPosition} />);
     case 'WriteFinalAnswer':

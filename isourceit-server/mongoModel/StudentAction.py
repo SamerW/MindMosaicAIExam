@@ -6,10 +6,11 @@ from bson import ObjectId
 
 __all__ = ['StudentAction', 'StartExam', 'START_EXAM_TYPE',
            'WroteInitialAnswer', 'WROTE_INITIAL_ANSWER_TYPE',
-           'AskChatAI', 'ASK_CHAT_AI_TYPE',
+           'AskChatAI', 'ASK_CHAT_AI_TYPE','SearchEngine','ASK_SEARCH_ENGINE',
            'ExternalResource', 'EXTERNAL_RESOURCE_TYPE',
            'WroteFinalAnswer', 'WROTE_FINAL_ANSWER_TYPE',
            'SubmitExam', 'SUBMIT_EXAM_TYPE',
+           'VisitUrl','VISIT_URL',
            'ChangedQuestion', 'CHANGED_QUESTION_TYPE',
            'LOST_FOCUS_TYPE', 'LostFocus',
            'STUDENT_ACTION_TYPE_MAPPING', 'create_start_exam']
@@ -19,9 +20,11 @@ CHANGED_QUESTION_TYPE = 'ChangedQuestion'
 LOST_FOCUS_TYPE = 'LostFocus'
 WROTE_INITIAL_ANSWER_TYPE = 'WriteInitialAnswer'
 ASK_CHAT_AI_TYPE = 'AskChatAI'
+ASK_SEARCH_ENGINE = 'SearchEngine'
 EXTERNAL_RESOURCE_TYPE = 'AddExternalResource'
 WROTE_FINAL_ANSWER_TYPE = 'WriteFinalAnswer'
 SUBMIT_EXAM_TYPE = 'SubmitExam'
+VISIT_URL = 'VisitUrl'
 # Define the new action type constant
 
 
@@ -67,6 +70,15 @@ class AskChatAI(StudentAction):
     model_key: pydantic.StrictStr
     image: NotRequired[pydantic.StrictStr]
 
+class SearchEngine(StudentAction):
+    query: NotRequired[pydantic.StrictStr]
+    results: NotRequired[pydantic.StrictStr]
+    search_engine_id: pydantic.StrictStr
+    search_engine_key: pydantic.StrictStr
+
+class VisitUrl(StudentAction):
+    url: pydantic.StrictStr
+    search_engine_name: pydantic.StrictStr
 
 class ExternalResource(StudentAction):
     title: pydantic.StrictStr
@@ -93,9 +105,11 @@ STUDENT_ACTION_TYPE_MAPPING = {
     LOST_FOCUS_TYPE: LostFocus,
     WROTE_INITIAL_ANSWER_TYPE: WroteInitialAnswer,
     ASK_CHAT_AI_TYPE: AskChatAI,
+    ASK_SEARCH_ENGINE: SearchEngine,
     EXTERNAL_RESOURCE_TYPE: ExternalResource,
     WROTE_FINAL_ANSWER_TYPE: WroteFinalAnswer,
-    SUBMIT_EXAM_TYPE: SubmitExam
+    SUBMIT_EXAM_TYPE: SubmitExam,
+    VISIT_URL : VisitUrl,
 }
 
 
@@ -123,6 +137,19 @@ def create_ask_chat_ai(exam_id: str, question_idx: int, student_username: str,
                      action_type=ASK_CHAT_AI_TYPE, prompt=prompt, answer=answer, chat_id=chat_id, chat_key=chat_key,
                      model_key=model_key)
 
+def create_ask_engine_seach(exam_id: str, question_idx: int, student_username: str,
+                       query: str, results: Optional[str], search_engine_id: str,
+                       search_engine_key: str,
+                       timestamp: datetime = None):
+    return SearchEngine(timestamp=timestamp if timestamp else datetime.now(), exam_id=exam_id,
+                     question_idx=question_idx, student_username=student_username,
+                     action_type=ASK_SEARCH_ENGINE, query=query, results=results, search_engine_id=search_engine_id, search_engine_key=search_engine_key)
+
+def create_visit_url(exam_id: str, question_idx: int, student_username: str,
+                       url: str, search_engine_name: str,timestamp: datetime = None):
+    return VisitUrl(timestamp=timestamp if timestamp else datetime.now(), exam_id=exam_id,
+                     question_idx=question_idx, student_username=student_username,
+                     action_type=VISIT_URL, url=url,  search_engine_name=search_engine_name)
 
 def create_external_resource(exam_id: str, question_idx: int, student_username: str,
                              title: str, description: str, rsc_type: str, removed: Optional[datetime],

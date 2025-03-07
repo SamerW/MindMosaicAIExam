@@ -42,10 +42,10 @@ TICKET_COM_ANSWER_ON_GENERATE = False
 TICKET_STUDENT_KEY = "3fc5c5170ebf71780ba3847bdcec28dd0e1b989ab415ea9d2fa9cc451b6cf4eb"  # default my_secret_key
 TICKET_STUDENT_SALT = "chat-ai-exam-srv"  # default chat-ai-exam-srv
 # Parametric URL to provide to student to initiate connection. Modify according your deployment setting.
-APP_COMPOSITION_AUTH_GENERATION_URL = 'http://localhost:8888/isourceit/composition/auth/generation/:exam_type/:exam_id'
+APP_COMPOSITION_AUTH_GENERATION_URL = 'http://:ip_address:8888/isourceit/composition/auth/generation/:exam_type/:exam_id'
 # Parametric URL to validate a student authentication ticket, that will be sent by mail to students.
 # Modify according your deployment setting.
-APP_COMPOSITION_AUTH_VALIDATION_URL = 'http://localhost:8888/isourceit/composition/auth/validation?ticket=:ticket'
+APP_COMPOSITION_AUTH_VALIDATION_URL = 'http://:ip_address:8888/isourceit/composition/auth/validation?ticket=:ticket'
 
 # Private KEY encryption parameters
 # default b'WRfY1CgEmfvGEY4DRhxgSbpt2obQCe4cd7rx1qvGeto='

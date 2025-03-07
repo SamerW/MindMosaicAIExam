@@ -1,6 +1,6 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import {
-  getExamSummary, updateExam, createExam, getAppAvailableChats, clearReports,
+  getExamSummary, updateExam, createExam, getAppAvailableChats,getAppAvailableSearchEngines, clearReports,
   getSocratsSummary, updateSocrat, createSocrat, getDefaultSocratInitPrompt,
 } from './netLayer';
 import AdmExam from './AdmExam';
@@ -14,6 +14,8 @@ class AdmExamManager {
   _currentExam = null;
 
   _availableChats = null;
+
+  _availableSearchEngines = null;
 
   _defaultSocratInitPrompt = null;
 
@@ -148,6 +150,31 @@ class AdmExamManager {
         this._availableChats = availableChats;
       });
       return availableChats;
+    } catch (e) {
+      runInAction(() => {
+        this._loadingError = e;
+      });
+      return null;
+    } finally {
+      runInAction(() => {
+        this._loading -= 1;
+      });
+    }
+  }
+
+  async loadAvailableSearchEngines() {
+    if (this._availableSearchEngines) {
+      return this._availableSearchEngines;
+    }
+    this._loading += 1;
+    try {
+      const availableSearchEngines = await getAppAvailableSearchEngines();
+      console.log("hhhe");
+      console.log(availableSearchEngines);
+      runInAction(() => {
+        this._availableSearchEngines = availableSearchEngines;
+      });
+      return availableSearchEngines;
     } catch (e) {
       runInAction(() => {
         this._loadingError = e;
