@@ -211,7 +211,7 @@ function _VisitUrlAction({ action, ...props }) {
       <p className="mb-0" style={{ whiteSpace: 'pre-line' }}>
         <u>Url:</u>
         {' '}
-        {action.query}
+        {action.url}
       </p>
       <p className="mb-1" style={{ whiteSpace: 'pre-line' }}>
         <u>Engine:</u>
@@ -222,7 +222,7 @@ function _VisitUrlAction({ action, ...props }) {
   );
 }
 
-_SearchEngineAction.propTypes = {
+_VisitUrlAction.propTypes = {
   action: MPropTypes.objectOrObservableObject.isRequired,
 };
 
@@ -311,8 +311,8 @@ export default function createActionView({ action, key, rightPosition = false })
       return (<AskChatAIAction key={key} action={action} rightPosition={rightPosition} />);
     case 'SearchEngine':
       return (<SearchEngineAction key={key} action={action} rightPosition={rightPosition} />);
-    case 'VisitedUrl':
-      return (<VisiteUrlAction key={key} action={action} rightPosition={rightPosition} />);
+    case 'VisitUrl':
+      return (<VisitUrlAction key={key} action={action} rightPosition={rightPosition} />);
     case 'AddExternalResource':
       return (<AddResourceAction key={key} action={action} rightPosition={rightPosition} />);
     case 'WriteFinalAnswer':
